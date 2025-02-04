@@ -1,16 +1,17 @@
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "hardware/pio.h"
-#include "hardware/clocks.h"
-
-// Biblioteca gerada pelo arquivo .pio durante compilação.
-#include "ws2818b.pio.h"
 #include "neopixel.h"
+#include "ws2818b.pio.h"
 
-#define LED_COUNT 25
+// Definição do buffer de pixels que formam a matriz.
+npLED_t leds[LED_COUNT];
 
+// Variáveis para uso da máquina PIO.
+PIO np_pio;
+uint sm;
+
+/**
+ * Inicializa a máquina PIO para controle da matriz de LEDs.
+ */
 void npInit(uint pin) {
-
   // Cria programa PIO.
   uint offset = pio_add_program(pio0, &ws2818b_program);
   np_pio = pio0;
@@ -63,13 +64,6 @@ void npWrite() {
   sleep_us(100); // Espera 100us, sinal de RESET do datasheet.
 }
 
-/**
- * Converte as coordenadas (x, y) na matriz 5x5 para o índice da fila linear.
- * 
- * @param x A coluna (0 a 4).
- * @param y A linha (0 a 4).
- * @return O índice correspondente na fila (0 a 24).
- */
 int getIndex(int x, int y) {
     // Se a linha for par (0, 2, 4), percorremos da esquerda para a direita.
     // Se a linha for ímpar (1, 3), percorremos da direita para a esquerda.
@@ -78,17 +72,4 @@ int getIndex(int x, int y) {
     } else {
         return y * 5 + (4 - x); // Linha ímpar (direita para esquerda).
     }
-}
-
-void draw_square() {
-    int x = 1;
-    for (int y = 0; y < 5; y++) {
-        npSetLED(getIndex(x, y), 2, 2, 2);
-    }
-    x = 3;
-    for (int y = 0; y < 5; y++) {
-        npSetLED(getIndex(x, y), 2, 2, 2);
-    }
-    npSetLED(getIndex(2, 0), 2, 2, 2);
-    npSetLED(getIndex(2, 4), 2, 2, 2);
 }
